@@ -28,14 +28,16 @@
             android:layout_margin="5dp"
             android:layout_alignParentStart="true"
             android:src="@drawable/last" />
+
     <TextView
         android:id="@+id/next2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10pt"
         android:layout_alignParentRight="true"
+        android:layout_margin="10dp"
         android:text="下一步"
-        android:layout_margin="10dp"/>
+        android:textSize="10pt" />
+
     <EditText
         android:id="@+id/ask_title"
         android:layout_width="match_parent"
@@ -64,14 +66,14 @@
         android:layout_height="match_parent"
         android:textColor="#262829"
         android:textColorHint="#647474"
-        android:background="@null"
         android:textSize="10pt"
         android:hint="描述你的问题或需求，表达清楚，越容易获得帮助哦（100个字以内）"
         android:maxLength="100"
         android:layout_marginTop="120dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginBottom="60dp"/>
+        android:layout_marginBottom="60dp"
+        android:gravity="left|top"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_centerHorizontal="true"

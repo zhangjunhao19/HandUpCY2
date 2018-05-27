@@ -12,9 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.handupcy.AskQuestionActivity;
 import com.example.handupcy.Fragment.question_Fragment.questionPaperAdapter;
-import com.example.handupcy.QuestionActivity;
 import com.example.handupcy.QuestionType;
 import com.example.handupcy.R;
 

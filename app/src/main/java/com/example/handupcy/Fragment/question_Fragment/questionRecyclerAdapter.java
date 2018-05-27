@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.example.handupcy.CircleImage;
 import com.example.handupcy.ImageLoad.ImageLoader;
-import com.example.handupcy.QuestionActivity;
+import com.example.handupcy.QuestionParticularsActivity;
 import com.example.handupcy.R;
 
 import java.util.List;
@@ -41,9 +41,9 @@ public class questionRecyclerAdapter extends RecyclerView.Adapter<questionRecycl
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         imageLoader=ImageLoader.build(mcontext);
-        EveryQuestion everyQuestion=questionList.get(position);
+        final EveryQuestion everyQuestion=questionList.get(position);
         if(everyQuestion.getGender()=="女")holder.gender.setImageResource(R.drawable.girl);
        holder.miaos.setText(everyQuestion.getDescription());
         holder.title.setText(everyQuestion.getTitle());
@@ -53,9 +53,15 @@ public class questionRecyclerAdapter extends RecyclerView.Adapter<questionRecycl
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(mcontext, QuestionActivity.class);
+                Intent intent=new Intent(mcontext, QuestionParticularsActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putString("ID", id);
+                bundle.putString("id", id);
+                bundle.putString("title",everyQuestion.getTitle());
+                bundle.putString("touxiang",everyQuestion.getTouUrl());
+                bundle.putString("miaos",everyQuestion.getDescription());
+                bundle.putString("reward",everyQuestion.getReward());
+                bundle.putString("name",everyQuestion.getNickname());
+                bundle.putString("gender",everyQuestion.getGender());
                 intent.putExtras(bundle);
                 mcontext.startActivity(intent);
             }
