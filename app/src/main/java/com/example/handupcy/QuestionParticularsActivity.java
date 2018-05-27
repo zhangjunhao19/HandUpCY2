@@ -3,6 +3,7 @@ package com.example.handupcy;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,6 +42,12 @@ public class QuestionParticularsActivity extends AppCompatActivity {
         textView2.setText(name);
         ImageView imageView=findViewById(R.id.gender2);
         if(gender=="女")imageView.setImageResource(R.drawable.girl);
-
+        ImageView imageView1=findViewById(R.id.back);
+        imageView1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 }
