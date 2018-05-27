@@ -7,3 +7,4 @@
 - 这次把几个常用的控件，例如Recyclerview、viewpager等练得更加熟练了，还有碎片基本也熟了
 - 之前不会的popupwindow这次依旧。。。不会用
 - UI丑得超出我的想象
+![image](https://github.com/zangjunhao/zhihuribao/blob/master/sss.gif)
