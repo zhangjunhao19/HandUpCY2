@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CircleImage">
+        <attr name="KuangColor" format="color"/>
+        <attr name="KuangWidth" format="dimension"/>
+    </declare-styleable>
+</resources>

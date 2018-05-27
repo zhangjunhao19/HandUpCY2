@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#F6F6F6"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8"
+        android:background="#58B1FC"
+        android:text="邮 问"
+        android:textSize="10pt"
+        android:textStyle="bold"
+        android:gravity="center"
+        />
+    <android.support.design.widget.TabLayout
+        android:id="@+id/question_tab"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:tabIndicatorColor="#6898FF"
+        app:tabSelectedTextColor="#6898FF"
+        app:tabTextColor="#777777"
+        android:layout_weight="7"/>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/question_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="74"/>
+    </LinearLayout>
+    <ImageView
+        android:layout_width="16pt"
+        android:layout_height="16pt"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="3dp"
+        android:src="@drawable/lingdang"/>
+    <ImageView
+        android:layout_width="16pt"
+        android:layout_height="16pt"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="6dp"
+        android:layout_marginTop="3dp"
+        android:src="@drawable/saixuan"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/ask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/xie"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="25dp"/>
+</RelativeLayout>

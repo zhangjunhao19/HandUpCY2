@@ -1,0 +1,301 @@
+package com.example.handupcy.ImageLoad;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
+import android.util.LruCache;
+import android.widget.ImageView;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Created by 67698 on 2018/5/25.
+ */
+
+public class ImageLoader {
+    private static final String TAG="ImageLoader";
+    public static final int MESSAGE_RESULT=1;
+    private static final int CPU_COUNT=Runtime.getRuntime().availableProcessors();//获取cup数量
+    private static final int CPRE_POOL_SIZE=CPU_COUNT+1;//核心线程要比cpu数多一个
+    private static final int MAXIMUM_POOL_SIZE=CPU_COUNT*2+1;//线程池最大线程数量等于核心线程的两倍多一个
+    private static final long KEEP_ALIVE=10L;//线程的最长等待时间，long赋值后面需要加L
+    private static final long DISK_CACHE_SIZE=1024*1024*50;//最大缓存为50MB(因为内存的基本单位是b)
+    private static final int IO_BUFFER_SIZE =8*1024;//流内最大缓存量
+    private static final int DISK_CACHE_INDEX=0;//缓存指针
+
+    private static final ThreadFactory sThreadFactory=new ThreadFactory() {//为后面线程池做准备
+        private final AtomicInteger mcount=new AtomicInteger(1);//原子操作Integer,线程安全的Integer类
+        @Override
+        public Thread newThread( Runnable r) {
+            return new Thread(r,"ImageLoader#"+mcount.getAndIncrement());
+        }
+    };
+    public static final Executor THREAD_POOL_EXECUTOR=new ThreadPoolExecutor(CPRE_POOL_SIZE,MAXIMUM_POOL_SIZE,KEEP_ALIVE, TimeUnit.SECONDS,new LinkedBlockingQueue<Runnable>(),sThreadFactory);//建立线程池
+    private android.os.Handler mMainHandler=new android.os.Handler(Looper.getMainLooper()){
+        @Override
+        public void handleMessage(Message msg) {
+            LoaderResult result=(LoaderResult)msg.obj;
+            ImageView imageView=result.imageView;
+            imageView.setImageBitmap(result.bitmap);
+            String url=(String)imageView.getTag();
+            if(url.equals(result.url)){
+                imageView.setImageBitmap(result.bitmap);
+            }
+            else{
+                Log.w(TAG,"无匹配url,更新");
+            }
+        }
+    };
+    private Context mContext;
+    private ImageCompress mImageCompress=new ImageCompress();
+    private LruCache<String,Bitmap> mMemoryCache;//内存缓存
+    private File DiskFile=null;//磁盘储存文件
+    private ImageLoader(Context context)
+    {
+        mContext=context.getApplicationContext();//获取上下文
+        int MaxMemory=(int)(Runtime.getRuntime().maxMemory()/1024);//最大内存
+        int CacheSize=MaxMemory/8;//缓存最大为内存的1/8;
+        mMemoryCache=new LruCache<String, Bitmap>(CacheSize){
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getRowBytes()*value.getHeight()/1024;
+            }
+        };
+        DiskFile=BuildDiskFile(context);
+    }
+    private static File BuildDiskFile(Context context)//创立文件夹
+    {
+
+        File file=null;
+        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            file=new File(new File(Environment.getExternalStorageDirectory(),context.getPackageName()),"Cache");
+            if (!file.exists()) {
+                file.mkdir();//建立文件夹
+            }
+            if(file.exists()) Log.d(TAG, "BuildDiskFile: 文件夹创建成功");
+
+        }
+        return file;
+    }
+    private static String getMD5(String url){//MD5加密
+        String rec=null;
+        try {
+            MessageDigest messageDigest=MessageDigest.getInstance("MD5");
+            byte [] data=messageDigest.digest(url.getBytes());
+            StringBuilder stringBuilder=new StringBuilder();
+            for (byte b:data){
+                int ib=b& 0x0FF;
+                String s=Integer.toHexString(ib);
+                stringBuilder.append(s);
+            }
+            rec=stringBuilder.toString();
+            Log.d("MD5", "MD5********** "+rec);
+            return rec;
+        }catch (Exception e){
+            e.printStackTrace();
+            return "error";
+        }
+    }
+    public static ImageLoader build(Context context)//设置生成对象方法
+    {
+        return new ImageLoader(context);
+    }
+
+    //同步加载
+    public Bitmap loadBitmap(String url,int reqWidth,int reqHeight)
+    {
+        Bitmap bitmap=loadBitmapFromMemCache(url);
+        if(bitmap!=null){
+            Log.d(TAG,"从内存中加载");
+            return bitmap;
+        }
+        bitmap=loadBitmapFormDiskCache(url);
+        if(bitmap!=null)
+        {
+            Log.d(TAG, "从本地中加载");
+            return bitmap;
+        }
+        bitmap=loadBitmapFormHttp(url,reqWidth,reqHeight);
+        if(bitmap!=null) {
+            Log.d(TAG, "从网络中加载 ");
+            return bitmap;
+        }
+        return bitmap;
+    }
+    //异步加载
+
+    //当不知道这个图片的准确大小时使用这种方法
+    public void bindBitmap(final String url,final ImageView imageView)
+    {
+        bindBitmap(url,imageView,0,0);
+    }
+
+    public void  bindBitmap(final String url,final ImageView imageView,final int reqWidth,final int reqHeight)
+    {
+        imageView.setTag(url);
+        Bitmap bitmap=loadBitmapFromMemCache(url);
+        if(bitmap!=null){
+            imageView.setImageBitmap(bitmap);
+            return;
+        }
+        Runnable loadBitmapTask=new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "进行了异步下载图片 ");
+                Bitmap bitmap=loadBitmap(url,reqWidth,reqHeight);
+                if(bitmap!=null)
+                {
+                    LoaderResult result=new LoaderResult(imageView,url,bitmap);
+                    mMainHandler.obtainMessage(MESSAGE_RESULT,result).sendToTarget();
+                }
+            }
+        };
+        THREAD_POOL_EXECUTOR.execute(loadBitmapTask);
+    }
+
+    private Bitmap loadBitmapFromMemCache(String url)
+    {   Log.d(TAG,"MemCache");
+        Bitmap bitmap=getBitmapFromMemoryCache(url);
+        Log.d(TAG, "loadBitmapFromMemCache: 此时的bitmap "+bitmap);
+        if(bitmap!=null)return bitmap;
+        else return null;
+    }
+    private Bitmap loadBitmapFormDiskCache(String url)//看文件中有没有名字相同的
+    {
+        Log.d(TAG,"DISKCache");
+        Bitmap bitmap=null;
+        String imageFileName=DiskFile.toString()+File.separator+getMD5(url)+".png";
+        File file=new File(imageFileName);
+        if(file.exists()) bitmap= BitmapFactory.decodeFile(imageFileName);
+        if(bitmap!=null) saveToMemoryCache(url,bitmap);
+        return bitmap;
+    }
+    private Bitmap loadBitmapFormHttp(String urll,int reqWidth,int reqHeight)
+    {
+        ImageCompress imageCompress=new ImageCompress();
+        if(Looper.myLooper()==Looper.getMainLooper()){
+            throw new RuntimeException("网络操作不能在UI线程上操作");
+        }
+        Bitmap bitmap=null;
+        HttpURLConnection urlConnection=null;
+        InputStream inputStream=null;
+        try{
+            URL url=new URL(urll);
+            urlConnection=(HttpURLConnection)url.openConnection();
+            inputStream=urlConnection.getInputStream();
+            bitmap=imageCompress.decodeSampledBitmapFromStream(inputStream,reqWidth,reqHeight);
+            Log.d(TAG, "loadBitmapFormHttp: bitmap"+bitmap);
+            if(bitmap!=null) {
+                saveToDisk(urll, bitmap);
+                // Log.d(TAG, "loadBitmapFormHttp: 此时的key为 "+urll+"此时的bitmap为 "+bitmap);
+                saveToMemoryCache(urll,bitmap);
+            }
+        }catch (final IOException e)
+        {
+            Log.e(TAG,"下图片的时候出现错误");
+        }
+        finally {
+            if(urlConnection!=null)
+            {
+                urlConnection.disconnect();
+            }
+            if(inputStream!=null) try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
+    }
+
+    private void saveToMemoryCache(String key,Bitmap bitmap)
+    {
+        if(getBitmapFromMemoryCache(key)==null&&bitmap!=null&&key!=null)
+        {
+            Log.d(TAG, "saveToMemoryCache: key="+key+"bitmap为"+bitmap);
+            mMemoryCache.put(key,bitmap);
+        }
+    }
+    private Bitmap getBitmapFromMemoryCache(String url)
+    {
+        return mMemoryCache.get(url);
+    }
+
+
+    public void saveToDisk(String imageurl,Bitmap bitmap)//缓存到本地
+    {
+        String imageFileName=DiskFile.toString()+File.separator+getMD5(imageurl)+".png";//.separator就是/或者\增加鲁棒性
+        Log.d(TAG, "saveToDisk: 调用了saveToDisk，切文件名为"+imageFileName);
+        File file=new File(imageFileName);
+        try {
+            if(file.exists()){
+                file.delete();
+                file.createNewFile();
+            }
+            if(file.exists()) Log.d(TAG, "saveToDisk: 文件已存在");
+            if(!file.isDirectory()) {
+                Log.d(TAG, "saveToDisk: 是文件");
+            }else
+                Log.d(TAG, "saveToDisk: 是文件夹");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            FileOutputStream fo=new FileOutputStream(imageFileName);
+            Log.d(TAG, "saveToDisk: 此时的bitmap为:"+bitmap);
+            if(bitmap!=null) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fo);
+                Log.d(TAG, "saveToDisk: 保存成功");
+            }
+            try {
+                fo.flush();
+                fo.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    public void clear()//清理本地缓存
+    {
+        File[] files=DiskFile.listFiles();
+        if(files!=null)
+        {
+            for (File f:files)
+            {
+                f.delete();
+            }
+        }
+    }
+    //下载数据类
+    private static class LoaderResult{
+        public ImageView imageView;
+        public String url;
+        public Bitmap bitmap;
+        public LoaderResult(ImageView imageView,String url,Bitmap bitmap){
+            this.imageView=imageView;
+            this.url=url;
+            this.bitmap=bitmap;
+        }
+    }
+
+
+}
