@@ -35,6 +35,7 @@ public class Login extends AppCompatActivity {
         password=(EditText)findViewById(R.id.mima);
         mcontext=this;
         if(!isGrantExternalRW(this))Toast.makeText(this,"客官没有权限不好办呀",Toast.LENGTH_SHORT).show();
+
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -31,7 +31,7 @@ public class QuestionParticularsActivity extends AppCompatActivity {
         gender=intent.getStringExtra("gender");
         TextView title1=findViewById(R.id.particular_title);
         title1.setText(title);
-        CircleImage circleImage=findViewById(R.id.touxiang);
+        CircleImage circleImage=findViewById(R.id.touxiang2);
         ImageLoader imageLoader=ImageLoader.build(this);
         imageLoader.bindBitmap(touxiang,circleImage,circleImage.getWidth(),circleImage.getHeight());
         TextView textView=findViewById(R.id.describe);

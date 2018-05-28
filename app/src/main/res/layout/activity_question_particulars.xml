@@ -9,7 +9,9 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:id="@+id/tou"
+        >
         <Button
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -39,33 +41,58 @@
         android:layout_margin="10dp"
         android:text="。。。"
         android:textSize="10pt" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/tou"
+        android:background=" #FEFEFE">
     <TextView
         android:id="@+id/particular_title"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:textSize="13pt"
-        android:textColor="#262829"
-        android:textStyle="bold"
-        android:layout_marginTop="58dp"
+        android:layout_height="40dp"
+        android:textSize="10pt"
+        android:textColor="#333333"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginLeft="10dp"
+
       />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/describe"
+            android:background="@drawable/edittextline"/>
     <TextView
         android:id="@+id/describe"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:textSize="12pt"
+        android:layout_height="100dp"
+        android:textSize="8pt"
         android:textColor="#262829"
-        android:layout_marginTop="130dp"/>
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_below="@id/particular_title"/>
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:layout_marginTop="280dp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/touxiang2"
+            android:background="@drawable/edittextline"/>
     <com.example.handupcy.CircleImage
-        android:id="@+id/touxiang"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="420dp"
-        android:layout_marginLeft="8dp"
+        android:id="@+id/touxiang2"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@id/describe"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
         android:src="@drawable/white"
         app:KuangColor="#F6F6F6"
         app:KuangWidth="0dp"/>
@@ -74,35 +101,37 @@
         android:id="@+id/name2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="415dp"
-        android:layout_marginLeft="85dp"
+        android:layout_alignTop="@id/touxiang2"
+        android:layout_toRightOf="@id/touxiang2"
+        android:layout_marginLeft="5dp"
         android:textColor="#555555"
-        android:textSize="11pt" />
+        android:textSize="9pt" />
 
     <ImageView
         android:id="@+id/gender2"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
         android:src="@drawable/boy"
-        android:layout_marginTop="415dp"
-        android:layout_marginLeft="124dp"/>
+        android:layout_toRightOf="@id/name2"
+        android:layout_marginLeft="5dp"
+        android:layout_alignBottom="@id/name2"/>
     <ImageView
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="70dp"
-        android:layout_marginTop="417dp"
+        android:layout_alignBottom="@id/particular_reward"
+        android:layout_toLeftOf="@id/particular_reward"
         android:src="@drawable/reward"/>
     <TextView
         android:id="@+id/particular_reward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/name"
+        android:layout_alignTop="@id/name2"
+        android:layout_marginTop="5dp"
         android:layout_alignParentRight="true"
 
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="415dp"
-        android:textSize="10pt"
+        android:layout_marginRight="10dp"
+        android:textSize="9pt"
         android:text="222"
         android:textColor="#777777"/>
+</RelativeLayout>
 </RelativeLayout>

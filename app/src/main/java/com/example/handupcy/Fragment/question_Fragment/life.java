@@ -75,7 +75,7 @@ public class life extends Fragment {
 
                             }
                         });                        if(listsize==questionList.size()){
-                            Toast.makeText(getActivity(),"别拉了再拉出bug了",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(),"垃圾图片加载库带不动了",Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
