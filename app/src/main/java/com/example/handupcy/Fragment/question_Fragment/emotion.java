@@ -91,9 +91,23 @@ public class emotion extends Fragment {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        page=0;
                         questionList.clear();
-                        getDate(getActivity(),"https://wx.idsbllp.cn/springtest/cyxbsMobile/index.php/QA/Question/getQuestionList","page=0&size=10&kind=情感",view);
-                        questionRecyclerAdapter1.notifyDataSetChanged();
+                        Http http=new Http("https://wx.idsbllp.cn/springtest/cyxbsMobile/index.php/QA/Question/getQuestionList","page="+page+"&size=10&kind=情感");
+                        http.sendRequestWithHttpURLConnection(new Http.Callback() {
+                            @Override
+                            public void finish(String respone) {
+                                parseJSON(respone);
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        questionRecyclerAdapter1.setDataList(questionList);
+                                        questionRecyclerAdapter1.notifyDataSetChanged();
+                                    }
+                                });
+
+                            }
+                        });
                         swipeRefreshLayout.setRefreshing(false);
                     }
                 }, 1000);
